@@ -1,0 +1,61 @@
+{
+  "id": "ifrc_red_cross_red_crescent",
+  "name": "International Federation of Red Cross and Red Crescent Societies",
+  "type": "humanitarian_network",
+  "geographic_scope": "global",
+  "disaster_types": [
+    "earthquake",
+    "flood",
+    "hurricane",
+    "cyclone",
+    "tornado",
+    "wildfire",
+    "tsunami",
+    "volcanic_eruption",
+    "drought",
+    "extreme_weather",
+    "disease_outbreak",
+    "pandemic",
+    "conflict",
+    "displacement"
+  ],
+  "services": [
+    "emergency_healthcare",
+    "mobile_clinics",
+    "emergency_hospitals",
+    "medical_supplies",
+    "shelter",
+    "temporary_housing_support",
+    "food_assistance",
+    "safe_drinking_water",
+    "sanitation",
+    "hygiene_support",
+    "essential_relief_items",
+    "cash_assistance",
+    "logistics",
+    "psychosocial_support",
+    "disease_prevention",
+    "emergency_needs_assessment",
+    "disaster_recovery",
+    "livelihood_recovery"
+  ],
+  "populations_served": [
+    "disaster_survivors",
+    "displaced_people",
+    "low_income_communities",
+    "people_without_shelter",
+    "people_needing_emergency_medical_care"
+  ],
+  "routing_tags": [
+    "medical",
+    "shelter",
+    "food",
+    "water",
+    "sanitation",
+    "emergency_supplies",
+    "cash_assistance",
+    "recovery",
+    "disaster_response"
+  ],
+  "routing_note": "Route callers to the relevant local Red Cross or Red Crescent National Society when possible rather than assuming the caller will receive services directly from IFRC."
+}

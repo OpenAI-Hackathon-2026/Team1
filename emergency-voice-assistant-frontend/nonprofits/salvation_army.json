@@ -1,0 +1,62 @@
+{
+  "id": "salvation_army",
+  "name": "The Salvation Army",
+  "type": "humanitarian_nonprofit",
+  "geographic_scope": "international",
+  "disaster_types": [
+    "wildfire",
+    "house_fire",
+    "hurricane",
+    "flood",
+    "tornado",
+    "earthquake",
+    "cyclone",
+    "drought",
+    "disease_outbreak",
+    "conflict",
+    "displacement",
+    "severe_weather"
+  ],
+  "services": [
+    "emergency_food",
+    "meals",
+    "drinking_water",
+    "emergency_shelter",
+    "temporary_refuge",
+    "blankets",
+    "hygiene_supplies",
+    "cleaning_supplies",
+    "mobile_showers",
+    "clothing",
+    "material_assistance",
+    "financial_assistance",
+    "housing_assistance",
+    "utility_assistance",
+    "cleanup_support",
+    "disaster_case_management",
+    "rebuilding_support",
+    "emotional_support",
+    "spiritual_support",
+    "emergency_communications"
+  ],
+  "populations_served": [
+    "disaster_survivors",
+    "displaced_people",
+    "families",
+    "first_responders",
+    "people_who_lost_housing",
+    "people_needing_emergency_food"
+  ],
+  "routing_tags": [
+    "food",
+    "water",
+    "shelter",
+    "housing",
+    "financial_assistance",
+    "cleanup",
+    "recovery",
+    "emotional_support",
+    "disaster_response"
+  ],
+  "routing_note": "Local Salvation Army disaster programs determine what assistance is actually available in a specific disaster area."
+}
