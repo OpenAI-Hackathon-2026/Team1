@@ -4,7 +4,7 @@ import './globals.css'
 
 export const metadata: Metadata = {
   title: 'Bridge | Find the right help',
-  description: 'Tell Bridge what you need and get connected with a community organization that can help.',
+  description: 'Find possible community resources for your needs and area.',
   generator: 'v0.app',
   icons: {
     icon: [

@@ -1,6 +1,5 @@
-import { VoiceAssistant } from '@/components/voice-assistant'
+import { ResourceFinder } from '@/components/bridge/resource-finder'
 
 export default function Page() {
-  return <VoiceAssistant />
+  return <ResourceFinder />
 }
-
