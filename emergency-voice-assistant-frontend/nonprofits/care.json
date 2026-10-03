@@ -1,0 +1,54 @@
+{
+  "id": "care",
+  "name": "CARE",
+  "type": "humanitarian_nonprofit",
+  "geographic_scope": "global",
+  "disaster_types": [
+    "flood",
+    "hurricane",
+    "cyclone",
+    "drought",
+    "earthquake",
+    "wildfire",
+    "extreme_weather",
+    "food_crisis",
+    "humanitarian_crisis",
+    "displacement"
+  ],
+  "services": [
+    "cash_assistance",
+    "voucher_assistance",
+    "food_assistance",
+    "hygiene_supplies",
+    "emergency_supplies",
+    "mother_and_baby_supplies",
+    "health_services",
+    "water_and_sanitation_support",
+    "livelihood_support",
+    "community_recovery",
+    "support_for_women_and_families",
+    "local_partner_support",
+    "disaster_preparedness"
+  ],
+  "populations_served": [
+    "disaster_survivors",
+    "women",
+    "children",
+    "families",
+    "low_income_communities",
+    "displaced_people",
+    "food_insecure_people"
+  ],
+  "routing_tags": [
+    "food",
+    "cash_assistance",
+    "housing_support",
+    "family_support",
+    "women",
+    "children",
+    "water",
+    "hygiene",
+    "recovery"
+  ],
+  "routing_note": "CARE frequently operates through local partner organizations, so the correct routing destination may be a CARE-supported local program rather than a CARE office directly."
+}

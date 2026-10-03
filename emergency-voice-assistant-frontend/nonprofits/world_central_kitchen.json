@@ -1,0 +1,40 @@
+{
+  "id": "world_central_kitchen",
+  "name": "World Central Kitchen",
+  "type": "humanitarian_nonprofit",
+  "geographic_scope": "global",
+  "disaster_types": [
+    "wildfire",
+    "hurricane",
+    "flood",
+    "earthquake",
+    "tornado",
+    "cyclone",
+    "tsunami",
+    "volcanic_eruption",
+    "extreme_weather",
+    "humanitarian_crisis"
+  ],
+  "services": [
+    "emergency_meals",
+    "hot_meals",
+    "food_distribution",
+    "emergency_food_relief",
+    "community_meal_support",
+    "disaster_food_logistics"
+  ],
+  "populations_served": [
+    "disaster_survivors",
+    "displaced_people",
+    "emergency_responders",
+    "communities_affected_by_crisis"
+  ],
+  "routing_tags": [
+    "food",
+    "meals",
+    "hunger",
+    "emergency_food",
+    "disaster_food"
+  ],
+  "routing_note": "Route callers here primarily for emergency food and meals. WCK is not a general housing, medical, legal or financial-assistance provider."
+}

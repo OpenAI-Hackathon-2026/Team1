@@ -1,0 +1,46 @@
+{
+  "id": "direct_relief",
+  "name": "Direct Relief",
+  "type": "humanitarian_nonprofit",
+  "geographic_scope": "global",
+  "disaster_types": [
+    "wildfire",
+    "hurricane",
+    "flood",
+    "tornado",
+    "earthquake",
+    "extreme_weather",
+    "humanitarian_crisis"
+  ],
+  "services": [
+    "medical_supplies",
+    "emergency_medicines",
+    "medical_equipment",
+    "emergency_medical_kits",
+    "healthcare_provider_support",
+    "financial_support_for_healthcare",
+    "disaster_health_response",
+    "chronic_disease_medications",
+    "respiratory_medications",
+    "trauma_supplies",
+    "infection_control_supplies",
+    "personal_protective_equipment"
+  ],
+  "populations_served": [
+    "disaster_affected_people",
+    "patients_needing_medical_care",
+    "vulnerable_communities",
+    "healthcare_facilities"
+  ],
+  "routing_tags": [
+    "medical",
+    "medicine",
+    "healthcare",
+    "medical_supplies",
+    "wildfire",
+    "flood",
+    "hurricane",
+    "earthquake"
+  ],
+  "routing_note": "Direct Relief primarily supplies and supports healthcare providers and response organizations rather than functioning as a general-purpose direct social-service hotline for individuals."
+}
