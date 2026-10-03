@@ -1,289 +1,236 @@
-# BRIDGE Hackathon Plan
+# Disaster Resource Navigator
 
-## Goal
+## Product decision
+- Position this as a **disaster resource navigator**, not a “universal 911.” It does not dispatch help or guarantee availability.
+- Demo promise: **In under 60 seconds, describe where you are and what you need; receive 1–3 verified-looking resource matches with eligibility, contact method, and a plain-language reason for each match.**
+- Primary path: a **guided public-service finder** with tappable categories, short follow-up questions, text, and optional voice. AI interprets needs behind the scenes; it is not the visual metaphor.
+- Voice is a secondary input mode via the existing recorder or the [ElevenLabs multimodal widget](https://elevenlabs.io/docs/eleven-agents/customization/widget), only after the guided path works.
+- Skip AWS and Alibaba Cloud. They add infrastructure risk without improving a local judging demo.
 
-Build a local-first disaster resource navigator that helps someone describe their situation and receive 1–3 explainable matches from known resource data in under 60 seconds.
+## Research-backed scope
+- Use three sudden-onset scenarios: **flood, earthquake, wildfire**. The disaster type supplies context, but matching should prioritize expressed needs, location, urgency, accessibility, and eligibility.
+- Support three demo profiles:
+  1. **Displaced caregiver with children:** safe family shelter, water, food, hygiene/baby supplies, medical help, family reunification.
+  2. **Older adult with limited mobility and diabetes:** accessible transport/shelter, medication continuity or refrigeration, assistive devices, medical care.
+  3. **Limited-English household without transportation:** evacuation transport, translated instructions, safe shelter, food/water, verified updates.
+- This aligns with [IFRC’s immediate-needs categories](https://www.ifrc.org/our-work/disasters-climate-and-crises/supporting-local-humanitarian-action/emergency-needs), [UNHCR’s displaced-family priorities](https://www.unhcr.org/what-we-do/respond-emergencies), and [WHO guidance for disability and continuity of care](https://www.who.int/publications/i/item/guidance-note-on-disability-and-emergency-risk-management-for-health).
 
-BRIDGE is not a universal 911 service. It does not dispatch help or guarantee availability.
+## Build architecture
+- Work in the clean shared clone at [repo root](./), with the app in [`emergency-voice-assistant-frontend/`](emergency-voice-assistant-frontend/). It already uses Next.js 16, React 19, TypeScript, Tailwind 4, shadcn, and pnpm.
+- Normalize the five existing files in [`nonprofits/`](emergency-voice-assistant-frontend/nonprofits/) into a shared `Resource` type. Add only fields required for the demo: coverage, languages/accessibility, status, freshness, contact action, and capacity note.
+- Add the three judge scenarios in `data/demo-scenarios.ts`.
+- Implement deterministic matching in `lib/matcher.ts`. Location and active status are gates; need, population, language, and accessibility tags determine ranking.
+- Replace the currently unimplemented endpoint assumptions in [`lib/api.ts`](emergency-voice-assistant-frontend/lib/api.ts) with one working extraction route and local matching.
+- Rebuild [`components/voice-assistant.tsx`](emergency-voice-assistant-frontend/components/voice-assistant.tsx) into small task-focused components rather than preserving its existing presentation.
 
-## Product direction
+## Salvage audit
 
-- Build a guided public-service finder, not a generic AI chatbot.
-- Lead with tappable need categories, short follow-up questions, and text.
-- Use AI behind the scenes to interpret free text.
-- Keep voice as an optional input mode after the typed flow works.
-- Match primarily on need, location, urgency, accessibility, language, and eligibility—not only disaster type.
-- Skip AWS and Alibaba Cloud for this prototype.
+### Keep and build on
+- The package/tooling setup, aliases, pnpm lockfile, Tailwind pipeline, and reusable button primitive.
+- The five nonprofit JSON files and their useful disaster, service, population, routing-tag, and routing-note fields.
+- The browser `MediaRecorder` setup, MIME fallback, track cleanup, and optional audio behavior; move these into a secondary voice-input component.
+- The typed request helper and user-facing microphone permission/no-speech error handling in `lib/api.ts`.
+- The basic status/state concept and mobile-responsive technical foundation.
 
-## Core interface
+### Refactor
+- Split the single large `voice-assistant.tsx` component into `SafetyBanner`, `NeedSelector`, `NeedDetails`, `NeedReview`, `ResourceCard`, `ResultsList`, and optional `VoiceInput`.
+- Replace the thin `Organization` and `RouteResponse` contracts with `UserNeed`, `Resource`, and `MatchResult`.
+- Convert global nonprofit capabilities into demo-specific local service entries or clearly label them as routing destinations; a global organization is not automatically locally available.
 
-1. Persistent notice: “In immediate danger? Call local emergency services.”
-2. “What do you need help with?” categories:
-   - Food and water
-   - Shelter
-   - Medical support
-   - Transport or evacuation
-   - Other
-3. Text area with a small optional microphone action.
-4. Short follow-up questions: coarse location, who needs help, urgency, language, and accessibility.
-5. Editable “Here’s what we understood” review.
-6. Up to three resource cards with:
-   - Organization and service
-   - Why it matched
-   - Coverage or eligibility limitation
-   - Last-updated value
-   - Truthful Call or View details action
-7. Change answers, no-match guidance, and typed fallback when AI or microphone access fails.
+### Discard
+- The gradient blobs, giant microphone orb, sparkles, waveform theater, decorative pill overload, and generic “AI assistant” hero composition.
+- The hard-coded `demoOrganization`, one-result flow, and invented Charlotte contact details.
+- Unsupported claims: “Private & secure,” “You’re connected,” and “is ready to help.”
+- Broken `/api/transcribe`, `/api/route`, `/api/speak`, and `/api/connect` interactions unless a developer makes them real.
 
-Use a calm civic-utility visual style: clear hierarchy, strong contrast, familiar controls, minimal decoration, mobile-first layout, and content-first cards.
+## Evidence-based interface direction
+- Use a **calm civic-utility aesthetic**: clear hierarchy, strong contrast, minimal decoration, familiar form controls, and content-first resource cards. The visual reference is a service finder or government benefits tool—not ChatGPT.
+- Google PAIR recommends familiar interaction patterns, staged expectations, explanations tied to decisions, and the ability to edit or override AI output. Source: [PAIR human-AI patterns](https://pair.withgoogle.com/guidebook-v2/patterns).
+- People under stress have poorer recall and make more input errors. Ask one short question at a time, explain why information is needed, and use calm no-blame errors. Source: [USWDS trust guidance](https://designsystem.digital.gov/patterns/complete-a-complex-form/establish-trust/).
+- Use a prominent emergency notice, semantic structure, keyboard focus, non-color status cues, large touch targets, and fast mobile loading. Sources: [USWDS alerts](https://designsystem.digital.gov/components/alert/) and [ITU emergency UI guidance](https://www.itu.int/rec/T-REC-F.760.2-202404-I/en).
+- Offer quick choices, text, and optional voice; explicitly support language/accessibility needs. Voice cannot be the only route. Sources: [USWDS language preferences](https://designsystem.digital.gov/patterns/select-a-language/language-preferences/) and [GSMA humanitarian language guidance](https://www.gsma.com/solutions-and-impact/connectivity-for-good/mobile-for-development/wp-content/uploads/2024/04/GSMA_Language-and-Digital-Humanitarian-Action_R_Web.pdf).
+- Show service limitations, source, freshness, and a way to change answers. IFRC frames trustworthy humanitarian communication as timely, accessible, transparent, and two-way. Source: [IFRC community engagement guidance](https://communityengagementhub.org/wp-content/uploads/sites/2/2019/06/IFRC-CEA-GUIDE-0612-LR-1.pdf).
 
-## What we can salvage
+## Screen and interaction specification
+1. **Safety banner:** persistent “In immediate danger? Call local emergency services.”
+2. **Need selection:** “What do you need help with?” plus large cards for Food & water, Shelter, Medical support, Transport/evacuation, and Other.
+3. **Multimodal detail:** plain text area first, with a small microphone action and an example tied to the selected category.
+4. **Guided follow-up:** only coarse location, who needs help, urgency, and language/accessibility constraints. Use chips, radios, and checkboxes.
+5. **Review:** “Here’s what we understood” with editable tags before matching.
+6. **Results:** up to three stacked cards showing service, why it matched, limits/eligibility, source/freshness, and a truthful Call or View details action.
+7. **Recovery:** Change answers, no-match guidance, and typed fallback when microphone or LLM fails without losing progress.
+8. **Demo shortcuts:** three clearly labeled example scenarios, visually secondary to the real task.
 
-Keep:
+## Four-person parallel split
 
-- Next.js, React, TypeScript, Tailwind, shadcn, and pnpm setup
-- Five nonprofit JSON source files
-- Browser `MediaRecorder` setup and cleanup
-- Typed request and microphone error-handling utilities
-- Reusable button primitive
+### Jessie — product, conversation, and demo owner
+- In the first 10 minutes, finalize the screen flow, exact question wording, selectable answers, and required versus optional fields.
+- Finalize the three scenarios, safety/trust copy, result labels, empty/error states, and 90-second demo narrative.
+- Give Developer 2 the resource fields and expected top result for each scenario; do not edit `resources.json` in parallel.
+- Review builds at minutes 35 and 75. Make scope calls and cut features; do not become a fourth coder during the critical path.
 
-Refactor:
+### Developer 1 — frontend and integration captain
+- Own `app/page.tsx`, `components/**`, styling, app state, accessibility, and the safety gate.
+- Confirm the scaffold runs, then replace—not reskin—the current AI-assistant screen with the task-first screen sequence.
+- Publish `.env.example` and shared contracts.
+- Consume the matcher through one agreed function and the LLM through one API endpoint; use stubs until those branches land.
+- Own final merges, conflict resolution, the runnable laptop, and the backup recording.
 
-- Split `components/voice-assistant.tsx` into focused task components.
-- Replace `Organization` and `RouteResponse` with shared `UserNeed`, `Organization`, `ResourceListing`, and `MatchResult` types.
-- Turn global nonprofit capabilities into clearly labeled demo resource listings.
+### Developer 2 — data contract and matching
+- Own `lib/types.ts`, `nonprofits/**`, `data/demo-scenarios.ts`, and `lib/matcher.ts`.
+- Within 15 minutes, merge `UserNeed`, `Resource`, and `MatchResult` plus one normalized existing nonprofit record.
+- Normalize the five current organizations and add only a few fictional local service records if necessary.
+- Build scoring logic with active-status/location gates and plain-language match reasons.
+- Verify expected ordering for all three scenarios without any external API.
 
-Discard:
+### Developer 3 — intelligence and voice adapter
+- Own route handlers, LLM prompting/schema validation, environment handling, transcription, and the optional voice adapter.
+- Convert free text into `UserNeed`; return only the agreed structured type. Do not rank resources or generate organization facts in the model.
+- Implement missing-key, malformed-output, and timeout fallbacks.
+- Make one extraction path work end to end; remove or stub misleading connect/TTS actions instead of exposing broken controls.
+- Add ElevenLabs only after the guided path passes all scenarios; keep voice behind a feature flag.
 
-- Giant microphone orb, gradient blobs, sparkles, waveform theater, and generic AI-assistant composition
-- Hard-coded `demoOrganization` and invented Charlotte contact details
-- Unsupported “Private & secure,” “You’re connected,” and “is ready to help” claims
-- Fake connect/TTS controls and unimplemented routes unless made real
+## Immediate team task board
 
-## Four-person task breakdown
+### Jessie — Product and conversation owner
 
-### Person 1 — Jessie: product, conversation, and demo
+**P0.1 — Lock the user journey (10 minutes)**
+- Deliver the exact sequence: safety notice → need category → describe situation → location → people/access needs → review → results.
+- Mark each question required or optional and define when it can be skipped.
+- Acceptance: Developer 1 can build every state without inventing product behavior.
 
-#### P0.1 — Lock the user journey
+**P0.2 — Deliver production copy and options (15 minutes, parallel)**
+- Write the page title, safety notice, five need-category labels, field prompts/hints, microphone label, review text, result labels, no-match state, and error/fallback messages.
+- Use plain, non-institutional language; never promise dispatch, availability, privacy, or completed connection.
+- Acceptance: all interface copy is approved in one handoff; developers do not independently rewrite it.
 
-- Finalize the sequence: safety → category → situation → location → people/access needs → review → results.
-- Mark every question required or optional.
-- Define when a question can be skipped.
+**P0.3 — Define three acceptance scenarios (10 minutes, parallel)**
+- For each profile, provide the exact user input, structured facts the system should extract, expected top match, acceptable alternate matches, and unsafe/wrong results.
+- Hand these to Developer 2 as matcher fixtures and Developer 1 as demo shortcuts.
 
-Acceptance: the frontend developer can build every state without inventing behavior.
+**P0.4 — Product reviews and demo (ongoing)**
+- Review the real UI at integration checkpoints; prioritize clarity, trust, and mobile usability.
+- At feature freeze, own the 90-second narrative and run two rehearsals.
 
-#### P0.2 — Deliver final interface copy
+### Developer 1 — Frontend and integration captain
 
-- Write the page title, safety notice, categories, prompts, hints, microphone label, review copy, result labels, no-match state, and errors.
-- Use plain language.
-- Do not promise dispatch, live availability, privacy, or a completed connection.
+**P0.1 — Verify and simplify the scaffold (10 minutes)**
+- Branch: `feat/ui-shell`.
+- Run the existing app; keep tooling and reusable primitives.
+- Remove the current visual composition and hard-coded demo result from the user path.
+- Create `.env.example` if credentials are required.
+- Acceptance: clean task-first shell runs locally and can render fixture data.
 
-Acceptance: all copy comes from one approved handoff.
-
-#### P0.3 — Define three acceptance scenarios
-
-For each scenario, provide:
-
-- Exact user input
-- Facts the system should extract
-- Expected top match
-- Acceptable alternate matches
-- Unsafe or clearly wrong results
-
-Use:
-
-1. Displaced caregiver with children
-2. Older adult with limited mobility and diabetes
-3. Limited-English household without transportation
-
-#### P0.4 — Review and demo
-
-- Review working builds at the integration checkpoints.
-- Make scope-cut decisions.
-- Own the 90-second demo narrative and two rehearsals.
-
-### Person 2 — Frontend developer and integration captain
-
-Branch: `feat/ui-shell`
-
-Owned files: `app/page.tsx`, `components/**`, styling, app state
-
-#### P0.1 — Verify and simplify the scaffold
-
-- Run the existing app.
-- Keep tooling and reusable primitives.
-- Remove the current visual composition and hard-coded result.
-- Add `.env.example` if credentials are needed.
-
-Acceptance: a clean task-first shell runs locally with fixture data.
-
-#### P0.2 — Build the guided interaction
-
-- Build `SafetyBanner`.
-- Build `NeedSelector`.
-- Build `NeedDetails`.
-- Build `NeedReview`.
-- Build `ResultsList`.
-- Build `ResourceCard`.
-- Support category selection, text input, location, accessibility/language choices, back/edit, and submit.
+**P0.2 — Build the guided interaction (30 minutes)**
+- Own `app/page.tsx` and `components/**`.
+- Build `SafetyBanner`, `NeedSelector`, `NeedDetails`, `NeedReview`, `ResultsList`, and `ResourceCard`.
+- Make category cards, text input, location, accessibility/language choices, back/edit, and submit work with local state.
 - Use mocked `UserNeed` and `MatchResult[]` until integrations land.
+- Acceptance: a user can complete the full typed journey without APIs or a microphone on a mobile-width viewport.
 
-Acceptance: the complete typed journey works without APIs or a microphone at mobile width.
+**P0.3 — Integrate and harden (25 minutes)**
+- Connect Developer 2’s matcher first, then Developer 3’s extractor.
+- Add loading, no-match, invalid-input, and API-fallback states without losing user answers.
+- Check keyboard navigation, visible focus, semantic labels, touch sizes, and contrast.
+- Acceptance: all three scenarios work from `main`; disabling the API key does not break the guided route.
 
-#### P0.3 — Integrate and harden
-
-- Integrate deterministic matching first.
-- Integrate AI extraction second.
-- Add loading, invalid-input, no-match, and API-fallback states without losing answers.
-- Check keyboard navigation, visible focus, labels, touch sizes, and contrast.
-
-Acceptance: all three scenarios work from `main`, including with the API key removed.
-
-#### P0.4 — Own the release
-
+**P0.4 — Own the release**
 - Be the only merge captain.
-- Resolve conflicts and keep `main` runnable.
-- Freeze features.
-- Run the final build on the judging laptop.
-- Capture the backup recording.
+- Freeze features, run the final build, keep the judging laptop on the known-good commit, and capture the backup recording.
 
-### Person 3 — Data and matching developer
+### Developer 2 — Resource data and deterministic matching
 
-Branch: `feat/resource-matcher`
+**P0.1 — Publish contracts first (15 minutes)**
+- Branch: `feat/resource-matcher`.
+- Own `lib/types.ts`.
+- Define `UserNeed`, `Organization`, `ResourceListing`, and `MatchResult`.
+- Include categories, coarse location, disaster type, population/access needs, language, urgency, reasons, and next action.
+- Merge or hand off this file first so UI and API work against the same types.
 
-Owned files: `lib/types.ts`, `lib/resources.ts`, `lib/matcher.ts`, `nonprofits/**`, `data/demo-scenarios.ts`
+**P0.2 — Normalize resource data (20 minutes)**
+- Own `nonprofits/**` plus `lib/resources.ts`.
+- Preserve the five source organization records; derive normalized resource listings with demo coverage, status, freshness, contact action, and service limitations.
+- Add only enough fictional local listings to produce meaningful location-aware matches.
+- Acceptance: every listing names its source and limitations; no invented “live availability.”
 
-#### P0.1 — Publish shared contracts first
+**P0.3 — Build and verify the matcher (25 minutes)**
+- Own `lib/matcher.ts` and `data/demo-scenarios.ts`.
+- Gate by active status and compatible coverage; rank need category, population, language, accessibility, and urgency.
+- Return up to three results with deterministic reasons and next actions.
+- Acceptance: all three Jessie-defined scenarios return the expected first match without any LLM or network call.
 
-Define:
+### Developer 3 — Need extraction and optional voice
 
-- `UserNeed`
-- `Organization`
-- `ResourceListing`
-- `MatchResult`
-
-Include categories, coarse location, disaster type, population/access needs, language, urgency, reasons, and next action.
-
-Acceptance: publish or merge `lib/types.ts` first so the other developers share one contract.
-
-#### P0.2 — Normalize resource data
-
-- Preserve the five source organization files.
-- Derive normalized listings with demo coverage, status, freshness, contact action, and limitations.
-- Add only enough fictional local listings for meaningful location-aware results.
-- Never invent live availability.
-
-Acceptance: every listing identifies its source and limitation.
-
-#### P0.3 — Build and verify deterministic matching
-
-- Gate by active status and compatible coverage.
-- Rank category, population, language, accessibility, and urgency.
-- Return up to three matches with deterministic reasons and next actions.
-
-Acceptance: all three scenarios return the expected top result without an LLM or network call.
-
-### Person 4 — AI extraction and optional voice developer
-
-Branch: `feat/need-extraction`
-
-Owned files: `app/api/extract-need/route.ts`, extraction utilities, optional voice adapter
-
-#### P0.1 — Implement constrained need extraction
-
-- Convert free text into the shared `UserNeed` shape.
-- Use structured output and schema validation.
+**P0.1 — Implement constrained extraction (25 minutes)**
+- Branch: `feat/need-extraction`.
+- Own `app/api/extract-need/route.ts` and extraction utilities.
+- Convert free text into the shared `UserNeed` shape using structured output/schema validation.
 - Never select, generate, or modify organizations in the model response.
+- Acceptance: the three scenario utterances produce valid structured needs; malformed model output returns a safe error.
 
-Acceptance: all three scenario utterances produce valid structured needs; malformed output returns a safe error.
+**P0.2 — Add resilient fallback (15 minutes)**
+- Implement timeout, missing-key, and invalid-output behavior.
+- Return control to guided fields or basic keyword extraction; never block deterministic matching.
+- Delete or hide the current fake connect/TTS actions.
+- Acceptance: removing credentials still leaves a complete demo path.
 
-#### P0.2 — Add resilient fallback
+**P1 — Add voice only after integration passes (maximum 15 minutes)**
+- Reuse the current `MediaRecorder` logic in a small `VoiceInput` component or connect ElevenLabs behind a feature flag.
+- Voice should populate the same editable text/review flow; it must not create a separate experience.
+- Cut this task immediately if typed matching is not stable by feature freeze.
 
-- Handle timeouts, missing keys, and invalid model output.
-- Return control to guided fields or basic keyword extraction.
-- Never block deterministic matching.
-- Delete or hide fake connect/TTS actions.
+## Team handoff sequence
+1. Developer 1 verifies the app while Jessie locks the flow and Developers 2/3 prepare branches.
+2. Developer 2 publishes `lib/types.ts`; Developers 1 and 3 immediately rebase/merge it.
+3. Jessie hands copy to Developer 1 and scenario expectations to Developer 2.
+4. Developer 1 finishes the UI with fixtures; Developer 2 finishes local matching; Developer 3 finishes extraction independently.
+5. Merge matcher/data first and prove all scenarios without APIs.
+6. Merge extraction second and verify no-key fallback.
+7. Decide on voice only after the first six steps pass.
 
-Acceptance: removing credentials still leaves a complete demo path.
+## Shared contracts to lock before parallel work
+- `extractNeed(message) -> UserNeed`
+- `matchResources(userNeed, resources) -> MatchResult[]`
+- `MatchResult` includes `resourceId`, `score`, `reasons[]`, and `nextAction`.
+- Developer 1 creates UI stubs returning those shapes. Developers 2 and 3 must not edit page/layout files.
+- Jessie approves copy in one shared note or chat message; one developer applies it to avoid copy-related merge conflicts.
 
-#### P1 — Add voice only if the core path passes
+## Git workflow for a two-hour sprint
+- Keep `main` runnable. Developer 1 is the single integration captain.
+- Use three short-lived branches: `feat/ui-shell`, `feat/resource-matcher`, and `feat/need-extraction`.
+- Commit small vertical checkpoints and push at least every 20–30 minutes. Open lightweight PRs; do not wait for formal reviews when the owner and integration captain have paired on the change.
+- Before handoff, each developer rebases or merges the latest `main`, resolves conflicts on their own branch, and tells the captain the exact smoke test.
+- Merge order: shared types/sample data → matcher/data → LLM extraction → voice widget. Freeze nonessential features 30 minutes before judging.
+- Never let two people edit the same file. If an urgent cross-owner change is needed, message the owner and let them make it.
 
-- Reuse `MediaRecorder` in a small `VoiceInput` component or add ElevenLabs behind a feature flag.
-- Voice must populate the same editable text/review flow.
-- Do not create a separate voice-only experience.
-- Cut this task if typed matching is not stable by the voice decision checkpoint.
+## Integration milestones from now
+- **Minute 10:** scaffold runs; journey, contracts, file ownership, and branches are locked.
+- **Minute 25:** shared types are published; UI uses fixtures; resource normalization and extraction are underway.
+- **Minute 45:** one typed guided scenario works end to end with deterministic local matching.
+- **Minute 65:** all three scenarios return plausible ranked cards from `main`.
+- **Minute 80:** review/edit, no-match, and no-key paths work. Make the final voice/no-voice decision.
+- **Minute 90:** feature freeze.
+- **Final 20 minutes:** accessibility/polish check, regression, two rehearsals, and backup recording.
 
-## Shared contracts
+## Safety and trust requirements
+- First turn: “Are you in immediate danger?” If yes, direct the user to the appropriate local emergency service; do not continue as if this app dispatches aid.
+- Collect only coarse location and need-related facts; no names, ID numbers, immigration status, or medical records. This follows the ICRC’s [humanitarian data-protection guidance](https://www.icrc.org/en/data-protection-humanitarian-action-handbook).
+- Every result shows why it matched, a “last updated” value, availability as unverified/demo data, and the next action. Never claim a referral was completed.
+- Include “none found” and API-failure states with a safe fallback rather than fabricating a result.
 
-```text
-extractNeed(message) -> UserNeed
-matchResources(userNeed, resources) -> MatchResult[]
-```
+## Remaining approximately 110-minute execution
+- **0–10 min:** run scaffold, lock contracts/copy, assign file ownership, branch.
+- **10–35 min:** frontend rebuilds the interface; data owner normalizes resources/matcher; API owner implements extraction/fallback; Jessie delivers final copy.
+- **35–65 min:** integrate safety, need selection, follow-ups, review, deterministic ranking, and result cards.
+- **65–80 min:** add validated LLM extraction while preserving the guided no-key path.
+- **80–90 min:** mobile/accessibility pass, empty/error states, and final voice decision.
+- **90–110 min:** feature freeze, regression, two rehearsals, and backup recording.
 
-`MatchResult` includes:
+## Demo narrative and acceptance checks
+- Open with the supply-to-need coordination gap, not a claim that aid is generally abundant everywhere.
+- Run the older-adult scenario: “I’m near Riverside, use a walker, and have one insulin dose left.” Show location filtering, urgent health/accessibility signals, and explainable ranked matches.
+- Show the caregiver and limited-English scenarios through one-click presets to prove breadth.
+- Pass criteria: all three scenarios return plausible top matches; no unknown organization can appear; the app survives a missing API key; immediate danger triggers the safety route; the full demo takes under 90 seconds.
 
-- `resourceId`
-- `score`
-- `reasons[]`
-- `nextAction`
-
-The frontend developer creates fixtures with these shapes. The data and AI developers do not edit page/layout files.
-
-## Handoff and merge sequence
-
-1. Frontend verifies the app while Jessie locks the flow.
-2. Data developer publishes `lib/types.ts`.
-3. Frontend and AI developers rebase or merge the shared types.
-4. Jessie sends copy to frontend and scenario expectations to data.
-5. Frontend works with fixtures while data and AI work independently.
-6. Merge matcher/data and prove all scenarios without APIs.
-7. Merge AI extraction and verify the missing-key fallback.
-8. Decide on voice only after the first seven steps pass.
-
-Merge order:
-
-1. Shared types and one normalized resource
-2. Matcher and remaining data
-3. AI extraction and fallback
-4. Optional voice
-
-## Git rules
-
-- Keep `main` runnable.
-- Use `feat/ui-shell`, `feat/resource-matcher`, and `feat/need-extraction`.
-- One owner per file.
-- Push small checkpoints every 20–30 minutes.
-- Before handoff, update from `main` and resolve conflicts on your own branch.
-- Tell the integration captain the exact smoke test for each handoff.
-- Freeze nonessential features before final regression.
-
-## Timeline from pickup
-
-- Minute 10: app runs; journey, contracts, ownership, and branches are locked.
-- Minute 25: shared types are published; UI uses fixtures.
-- Minute 45: one typed scenario works end to end with deterministic matching.
-- Minute 65: all three scenarios return plausible ranked cards from `main`.
-- Minute 80: review/edit, no-match, and missing-key paths work; make the final voice decision.
-- Minute 90: feature freeze.
-- Final 20 minutes: accessibility and polish, regression, two rehearsals, and backup recording.
-
-## Safety and acceptance
-
-- Immediate danger always routes to local emergency services.
-- Collect only coarse location and need-related details.
-- Do not collect names, ID numbers, immigration status, or medical records.
-- Every result explains why it matched and shows a next action.
-- Availability is clearly unverified demo data.
-- No unknown organization may appear.
-- The app survives a missing API key.
-- The full demo takes under 90 seconds.
-
-## What this prototype does not prove
-
-- Real-time inventory
-- Organizational onboarding
-- Global coverage
-- Successful handoff
-- Outcome tracking
-- Offline or low-bandwidth operation
-- Human escalation
+## What this POC does not prove
+- Real-time inventory, organizational onboarding, global coverage, successful handoff, or outcome tracking. Those are the real product risks and should be stated as the next phase, alongside offline/low-bandwidth access and human escalation.
